@@ -6,6 +6,31 @@ body {
     font-family: 'Poppins', sans-serif;
 }
 
+/* Estilos para o cabeçalho com logo */
+header {
+    border-bottom: 1px solid #e0e0e0;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+header a {
+    text-decoration: none;
+}
+
+header img {
+    max-height: 40px;
+    width: auto;
+    transition: transform 0.2s ease;
+}
+
+header img:hover {
+    transform: scale(1.05);
+}
+
+header span {
+    color: #4a6cf7;
+}
+
 .card {
     backdrop-filter: blur(10px);
     background-color: rgba(255, 255, 255, 0.8);
