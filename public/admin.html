@@ -67,8 +67,8 @@
                             <h5 class="card-title mb-1">Pedido #<span class="order-id"></span></h5>
                             <p class="card-subtitle text-muted small">Recebido em: <span class="timestamp"></span></p>
                         </div>
-                        <div class="actions d-flex align-items-center gap-2 mt-3 mt-md-0 w-100 justify-content-end">
-                            <button class="btn btn-outline-primary btn-sm view-proof-btn position-relative"
+                        <div class="actions d-flex align-items-center gap-2 mt-3 mt-md-0 w-100">
+                            <button class="btn btn-outline-primary btn-sm view-proof-btn position-relative me-auto"
                                 data-bs-toggle="modal" data-bs-target="#imageModal">
                                 Ver Comprovante
                                 <span
@@ -76,8 +76,10 @@
                                     <span class="proof-count">1</span>
                                 </span>
                             </button>
-                            <button class="btn btn-success btn-sm approve-btn">Aprovar</button>
-                            <button class="btn btn-danger btn-sm reject-btn">Rejeitar</button>
+                            <div class="d-flex gap-2 justify-content-end">
+                                <button class="btn btn-success btn-sm approve-btn">Aprovar</button>
+                                <button class="btn btn-danger btn-sm reject-btn">Rejeitar</button>
+                            </div>
                         </div>
                     </div>
                 </div>
