@@ -11,7 +11,7 @@ Gerais
 
 Para Vendedores
 - Envio de comprovantes de pagamento
-- Visualização de status dos pedidos enviadoss
+- Visualização de status dos pedidos enviados
 - Exclusão de pedidos pendentes
 - Filtros por número do pedido e status
 
