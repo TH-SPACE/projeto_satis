@@ -19,6 +19,11 @@ const upload = multer({ storage: storage });
 
 // Definindo as rotas e associando aos controllers
 // Todas as rotas de pagamento agora exigem que o usuário esteja logado
+
+// Rota para dashboard (apenas para administradores) - deve vir antes da rota genérica
+router.get('/dashboard', isLoggedInApi, isAdmin, paymentController.getDashboardData);
+
+// Todas as outras rotas de status (deve vir depois da rota específica)
 router.post('/', isLoggedInApi, upload.array('proofImages', 10), paymentController.createPayment);
 router.get('/:status', isLoggedInApi, paymentController.getPaymentsByStatus);
 

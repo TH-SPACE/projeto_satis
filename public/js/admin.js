@@ -21,22 +21,109 @@ document.addEventListener("DOMContentLoaded", () => {
     emptyMessage.classList.add("d-none");
     paymentsList.innerHTML = "";
 
-    try {
-      const response = await fetch(`/api/payments/${status}`);
-      if (!response.ok) throw new Error("Falha ao carregar os dados.");
+    if (status === "dashboard") {
+      await fetchDashboardData();
+    } else {
+      try {
+        const response = await fetch(`/api/payments/${status}`);
+        if (!response.ok) throw new Error("Falha ao carregar os dados.");
 
-      const payments = await response.json();
+        const payments = await response.json();
 
-      if (payments.length === 0) {
-        emptyMessage.classList.remove("d-none");
-      } else {
-        payments.forEach(createPaymentCard);
+        if (payments.length === 0) {
+          emptyMessage.classList.remove("d-none");
+        } else {
+          payments.forEach(createPaymentCard);
+        }
+      } catch (error) {
+        paymentsList.innerHTML = `<div class="col"><div class="alert alert-danger">${error.message}</div></div>`;
+      } finally {
+        loadingIndicator.classList.add("d-none");
       }
+    }
+  }
+
+  async function fetchDashboardData() {
+    loadingIndicator.classList.remove("d-none");
+    emptyMessage.classList.add("d-none");
+    paymentsList.innerHTML = "";
+
+    try {
+      const response = await fetch("/api/payments/dashboard");
+
+      if (response.status === 401) {
+        throw new Error("Você não está autenticado. Faça login novamente.");
+      } else if (response.status === 403) {
+        throw new Error("Você não tem permissão para acessar esta página.");
+      } else if (!response.ok) {
+        throw new Error("Falha ao carregar os dados do dashboard.");
+      }
+
+      const dashboardData = await response.json();
+
+      // Criação do layout de dashboard com cards de contagem
+      createDashboardCards(dashboardData);
     } catch (error) {
       paymentsList.innerHTML = `<div class="col"><div class="alert alert-danger">${error.message}</div></div>`;
     } finally {
       loadingIndicator.classList.add("d-none");
     }
+  }
+
+  function createDashboardCards(dashboardData) {
+    const container = document.createElement("div");
+    container.className = "row g-4";
+
+    // Card para Total de Pedidos
+    const totalCard = createDashboardCard(
+      "Total de Pedidos",
+      dashboardData.totalPayments,
+      "fas fa-file-invoice"
+    );
+    container.appendChild(totalCard);
+
+    // Card para Pedidos Pendentes
+    const pendingCard = createDashboardCard(
+      "Pendentes",
+      dashboardData.pendingCount,
+      "fas fa-clock text-warning"
+    );
+    container.appendChild(pendingCard);
+
+    // Card para Pedidos Aprovados
+    const approvedCard = createDashboardCard(
+      "Aprovados",
+      dashboardData.approvedCount,
+      "fas fa-check-circle text-success"
+    );
+    container.appendChild(approvedCard);
+
+    // Card para Pedidos Rejeitados
+    const rejectedCard = createDashboardCard(
+      "Rejeitados",
+      dashboardData.rejectedCount,
+      "fas fa-times-circle text-danger"
+    );
+    container.appendChild(rejectedCard);
+
+    paymentsList.appendChild(container);
+  }
+
+  function createDashboardCard(title, count, iconClass) {
+    const card = document.createElement("div");
+    card.className = "col-md-3 col-sm-6";
+
+    card.innerHTML = `
+      <div class="card text-center p-4 shadow-sm">
+        <div class="card-body">
+          <i class="${iconClass}" style="font-size: 2.5rem;"></i>
+          <h3 class="card-title mt-3">${count}</h3>
+          <p class="card-text text-muted">${title}</p>
+        </div>
+      </div>
+    `;
+
+    return card;
   }
 
   function createPaymentCard(payment) {
@@ -80,20 +167,20 @@ document.addEventListener("DOMContentLoaded", () => {
             "carousel-item" + (index === 0 ? " active" : "");
 
           let proofElement;
-          if (safePath.toLowerCase().endsWith('.pdf')) {
+          if (safePath.toLowerCase().endsWith(".pdf")) {
             proofElement = document.createElement("object");
             proofElement.data = safePath;
             proofElement.type = "application/pdf";
             proofElement.className = "d-block w-100";
             proofElement.style.height = "70vh";
 
-            const fallbackLink = document.createElement('a');
+            const fallbackLink = document.createElement("a");
             fallbackLink.href = safePath;
-            fallbackLink.textContent = 'Não foi possível exibir o PDF. Clique aqui para abrir em uma nova aba.';
-            fallbackLink.target = '_blank';
-            fallbackLink.className = 'btn btn-outline-primary mt-3';
+            fallbackLink.textContent =
+              "Não foi possível exibir o PDF. Clique aqui para abrir em uma nova aba.";
+            fallbackLink.target = "_blank";
+            fallbackLink.className = "btn btn-outline-primary mt-3";
             proofElement.appendChild(fallbackLink);
-
           } else {
             proofElement = document.createElement("img");
             proofElement.src = safePath;
@@ -125,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Verifica o perfil do usuário para mostrar os botões de ação
     if (window.currentUser) {
       // Apenas admins veem os botões de aprovar/rejeitar
-      if (window.currentUser.perfil === 'admin') {
+      if (window.currentUser.perfil === "admin") {
         if (payment.status !== "pending") {
           approveBtn.remove();
           rejectBtn.remove();
@@ -187,9 +274,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function handleDelete(id, status, userId, cardElement) {
     // Apenas admins podem excluir
-    if (window.currentUser.perfil === 'admin') {
+    if (window.currentUser.perfil === "admin") {
       if (confirm("Tem certeza que deseja excluir este pagamento?")) {
-        const button = cardElement.querySelector('.delete-btn');
+        const button = cardElement.querySelector(".delete-btn");
         button.disabled = true;
         button.innerHTML =
           '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
@@ -225,7 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   statusTabs.addEventListener("click", (event) => {
     event.preventDefault();
-    if (event.target.tagName === 'A') {
+    if (event.target.tagName === "A") {
       const navLink = event.target;
       const newStatus = navLink.dataset.status;
 
@@ -244,12 +331,12 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     // Adiciona um pequeno delay para esperar o navbar.js carregar, se necessário
     setTimeout(() => {
-        if(window.currentUser) {
-            fetchPayments("pending");
-        } else {
-            // Se ainda não estiver definido, pode ser um erro ou o usuário não está logado
-            window.location.href = '/login';
-        }
+      if (window.currentUser) {
+        fetchPayments("pending");
+      } else {
+        // Se ainda não estiver definido, pode ser um erro ou o usuário não está logado
+        window.location.href = "/login";
+      }
     }, 200);
   }
 });

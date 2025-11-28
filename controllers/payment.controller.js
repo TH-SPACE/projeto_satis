@@ -102,10 +102,39 @@ const deletePayment = async (req, res) => {
     }
 };
 
+const getDashboardData = async (req, res) => {
+    try {
+        // Contar o total de pagamentos
+        const [totalPaymentsResult] = await pool.query('SELECT COUNT(*) as total FROM payments');
+        const totalPayments = totalPaymentsResult[0].total;
+
+        // Contar pagamentos por status
+        const [pendingResult] = await pool.query('SELECT COUNT(*) as count FROM payments WHERE status = ?', ['pending']);
+        const pendingCount = pendingResult[0].count;
+
+        const [approvedResult] = await pool.query('SELECT COUNT(*) as count FROM payments WHERE status = ?', ['approved']);
+        const approvedCount = approvedResult[0].count;
+
+        const [rejectedResult] = await pool.query('SELECT COUNT(*) as count FROM payments WHERE status = ?', ['rejected']);
+        const rejectedCount = rejectedResult[0].count;
+
+        res.json({
+            totalPayments: totalPayments,
+            pendingCount: pendingCount,
+            approvedCount: approvedCount,
+            rejectedCount: rejectedCount
+        });
+    } catch (error) {
+        console.error('Erro ao buscar dados do dashboard:', error);
+        res.status(500).json({ message: 'Erro no servidor ao buscar dados do dashboard.' });
+    }
+};
+
 module.exports = {
     createPayment,
     getPaymentsByStatus,
     approvePayment,
     rejectPayment,
     deletePayment,
+    getDashboardData,
 };
