@@ -53,69 +53,94 @@ document.addEventListener("DOMContentLoaded", () => {
       payment.createdAt
     ).toLocaleString("pt-BR");
 
+    // Calcular quantidade de anexos
+    let proofCount = 1; // Valor padrão para caso não consiga parsear o JSON
+    try {
+      const filePaths = JSON.parse(payment.proofImagePath);
+      if (Array.isArray(filePaths)) {
+        proofCount = filePaths.length;
+      }
+    } catch (e) {
+      // Se o JSON for inválido ou for um caminho de imagem antigo (string simples)
+      proofCount = 1;
+    }
+
+    // Atualizar o badge de contagem de anexos
+    const proofCountBadge = cardClone.querySelector('.proof-count');
+    proofCountBadge.textContent = proofCount;
+
     const viewProofBtn = cardClone.querySelector(".view-proof-btn");
     viewProofBtn.addEventListener("click", () => {
-      modalTitle.textContent = `Comprovantes do Pedido #${payment.orderId}`;
+      // Calcular quantidade de anexos para o título do modal
+      let totalProofs = 1;
+      let filePathsArray = [];
+      try {
+        const filePaths = JSON.parse(payment.proofImagePath);
+        if (Array.isArray(filePaths)) {
+          totalProofs = filePaths.length;
+          filePathsArray = filePaths;
+        } else {
+          filePathsArray = [payment.proofImagePath];
+        }
+      } catch (e) {
+        // Se o JSON for inválido ou for um caminho de imagem antigo (string simples)
+        filePathsArray = [payment.proofImagePath];
+        totalProofs = 1;
+      }
+
+      // Atualizar o título do modal para mostrar o total de comprovantes
+      if (totalProofs > 1) {
+        modalTitle.textContent = `Comprovantes do Pedido #${payment.orderId} (${totalProofs} arquivos)`;
+      } else {
+        modalTitle.textContent = `Comprovantes do Pedido #${payment.orderId}`;
+      }
 
       // Limpa o carrossel anterior
       carouselIndicators.innerHTML = "";
       carouselInner.innerHTML = "";
 
-      try {
-        const filePaths = JSON.parse(payment.proofImagePath);
+      filePathsArray.forEach((path, index) => {
+        const safePath = path.replace(/\\/g, "/");
 
-        filePaths.forEach((path, index) => {
-          const safePath = path.replace(/\\/g, "/");
+        // Cria o indicador
+        const indicator = document.createElement("button");
+        indicator.type = "button";
+        indicator.dataset.bsTarget = "#imageCarousel";
+        indicator.dataset.bsSlideTo = index;
+        indicator.textContent = index + 1; // Mostrar o número do indicador
+        if (index === 0) indicator.classList.add("active");
 
-          // Cria o indicador
-          const indicator = document.createElement("button");
-          indicator.type = "button";
-          indicator.dataset.bsTarget = "#imageCarousel";
-          indicator.dataset.bsSlideTo = index;
-          if (index === 0) indicator.classList.add("active");
-
-          // Cria o item do carrossel
-          const carouselItem = document.createElement("div");
-          carouselItem.className =
-            "carousel-item" + (index === 0 ? " active" : "");
-
-          let proofElement;
-          if (safePath.toLowerCase().endsWith('.pdf')) {
-            proofElement = document.createElement("object");
-            proofElement.data = safePath;
-            proofElement.type = "application/pdf";
-            proofElement.className = "d-block w-100";
-            proofElement.style.height = "70vh";
-
-            const fallbackLink = document.createElement('a');
-            fallbackLink.href = safePath;
-            fallbackLink.textContent = 'Não foi possível exibir o PDF. Clique aqui para abrir em uma nova aba.';
-            fallbackLink.target = '_blank';
-            fallbackLink.className = 'btn btn-outline-primary mt-3';
-            proofElement.appendChild(fallbackLink);
-
-          } else {
-            proofElement = document.createElement("img");
-            proofElement.src = safePath;
-            proofElement.className = "d-block w-100 modal-img";
-            proofElement.alt = `Comprovante ${index + 1}`;
-          }
-
-          carouselItem.appendChild(proofElement);
-          carouselIndicators.appendChild(indicator);
-          carouselInner.appendChild(carouselItem);
-        });
-      } catch (e) {
-        // Se o JSON for inválido ou for um caminho de imagem antigo (string simples)
+        // Cria o item do carrossel
         const carouselItem = document.createElement("div");
-        carouselItem.className = "carousel-item active";
-        const img = document.createElement("img");
-        img.src = payment.proofImagePath.replace(/\\/g, "/");
-        img.className = "d-block w-100 modal-img";
-        img.alt = "Comprovante";
-        carouselItem.appendChild(img);
+        carouselItem.className =
+          "carousel-item" + (index === 0 ? " active" : "");
+
+        let proofElement;
+        if (safePath.toLowerCase().endsWith('.pdf')) {
+          proofElement = document.createElement("object");
+          proofElement.data = safePath;
+          proofElement.type = "application/pdf";
+          proofElement.className = "d-block w-100";
+          proofElement.style.height = "70vh";
+
+          const fallbackLink = document.createElement('a');
+          fallbackLink.href = safePath;
+          fallbackLink.textContent = 'Não foi possível exibir o PDF. Clique aqui para abrir em uma nova aba.';
+          fallbackLink.target = '_blank';
+          fallbackLink.className = 'btn btn-outline-primary mt-3';
+          proofElement.appendChild(fallbackLink);
+
+        } else {
+          proofElement = document.createElement("img");
+          proofElement.src = safePath;
+          proofElement.className = "d-block w-100 modal-img";
+          proofElement.alt = `Comprovante ${index + 1}`;
+        }
+
+        carouselItem.appendChild(proofElement);
+        carouselIndicators.appendChild(indicator);
         carouselInner.appendChild(carouselItem);
-      }
+      });
     });
 
     const approveBtn = cardClone.querySelector(".approve-btn");
