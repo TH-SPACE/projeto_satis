@@ -53,10 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 messageDiv.className = 'alert alert-success';
                 messageDiv.textContent = result.message;
 
-                // Redireciona com base no perfil do usuário
-                setTimeout(() => {
-                    window.location.href = result.user.perfil === 'admin' ? '/admin' : '/index';
-                }, 1500);
+                // Redireciona imediatamente com base no perfil do usuário
+                window.location.href = result.user.perfil === 'admin' ? '/admin' : '/index';
             } else {
                 throw new Error(result.message || 'Ocorreu um erro.');
             }
