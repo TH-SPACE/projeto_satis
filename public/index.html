@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar Comprovante - Satismake</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light-subtle">
+
+    <div class="container pt-4 pb-4">
+        <ul class="nav nav-tabs mb-4" id="main-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" id="send-tab" href="#" data-tab="send">Enviar Comprovante</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="submissions-tab" href="#" data-tab="submissions">Envios</a>
+            </li>
+        </ul>
+
+        <div id="send-section" class="tab-content">
+            <div class="card shadow-lg border-0 rounded-4 mx-auto" style="width: 100%; max-width: 500px;">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <h1 class="card-title h3 fw-bold text-primary-emphasis">Satismake</h1>
+                        <p class="text-muted">Envio de Comprovante de Pagamento</p>
+                    </div>
+
+                    <form id="paymentForm" novalidate>
+                        <div class="mb-3">
+                            <label for="orderId" class="form-label fw-medium">Número do Pedido</label>
+                            <input type="text" class="form-control form-control-lg" id="orderId" name="orderId" required>
+                            <div class="invalid-feedback">Por favor, insira o número do pedido.</div>
+                        </div>
+
+                        <!-- Zona de Upload e Paste -->
+                        <div id="paste-zone" class="text-center p-4 border-2 border-dashed rounded-3 mb-3" style="border-style: dashed;">
+                            <label for="proofImages" class="form-label fw-medium">
+                                Clique para selecionar ou cole imagens/PDFs aqui
+                            </label>
+                            <input type="file" class="form-control d-none" id="proofImages" name="proofImages" accept="image/*,application/pdf" multiple>
+                            <div class="invalid-feedback">Por favor, selecione ao menos uma imagem.</div>
+                        </div>
+
+                        <!-- Área de Preview das Imagens -->
+                        <div id="previews" class="d-flex flex-wrap gap-2 mb-4"></div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg fw-semibold">
+                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                Enviar Comprovantes
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="message" class="mt-4"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="submissions-section" class="tab-content d-none">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <h1 class="card-title h3 fw-bold text-primary-emphasis">Envios</h1>
+                        <p class="text-muted">Acompanhe o status de todos os envios</p>
+                    </div>
+
+                    <ul class="nav nav-tabs mb-4" id="status-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="pending-tab" href="#" data-status="pending" role="tab">Pendentes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="approved-tab" href="#" data-status="approved" role="tab">Aprovados</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="rejected-tab" href="#" data-status="rejected" role="tab">Rejeitados</a>
+                        </li>
+                    </ul>
+
+                    <div id="payments-list" class="row g-4">
+                        <!-- Cards de pagamento serão inseridos aqui -->
+                    </div>
+
+                    <div id="loading" class="text-center my-5 d-none">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                    </div>
+
+                    <div id="empty-message" class="text-center my-5 d-none">
+                        <p class="text-muted fs-5">Nenhum envio encontrado nesta categoria.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center mt-5 py-3">
+        <small class="text-muted">Sistema Satismake - &copy; 2025</small>
+    </footer>
+
+    <!-- Template do Card de Pagamento -->
+    <template id="payment-card-template">
+        <div class="col-12 col-lg-10 col-xl-8 mx-auto">
+            <div class="card payment-card rounded-3 border-start-4 mb-3">
+                <div class="card-body p-4">
+                    <div class="d-flex flex-wrap align-items-center">
+                        <div class="flex-grow-1 me-3">
+                            <h5 class="card-title mb-1">Pedido #<span class="order-id"></span></h5>
+                            <p class="card-subtitle text-muted small">Recebido em: <span class="timestamp"></span></p>
+                        </div>
+                        <div class="actions d-flex align-items-center gap-2 mt-3 mt-md-0">
+                            <button class="btn btn-outline-primary btn-sm view-proof-btn" data-bs-toggle="modal"
+                                data-bs-target="#imageModal">
+                                Ver Comprovante
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm delete-btn">Excluir</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Modal para Imagem -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel">Comprovantes do Pedido</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0 text-center">
+                    <div id="imageCarousel" class="carousel slide">
+                        <div class="carousel-indicators">
+                            <!-- Indicadores serão inseridos via JS -->
+                        </div>
+                        <div class="carousel-inner">
+                            <!-- Imagens do carrossel serão inseridas via JS -->
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Navbar JS -->
+    <script src="js/navbar.js"></script>
+    <!-- Custom JS -->
+    <script src="js/app.js"></script>
+</body>
+</html>

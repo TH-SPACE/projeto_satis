@@ -1,0 +1,70 @@
+Crie um siste Satismake é um sistema web para verificação de pagamentos e comprovantes de pagamento. O sistema permite que vendedores enviem comprovantes de pagamento, que são analisados por administradores que podem aprovar ou rejeitar os comprovantes.
+
+Funcionalidades do Sistema
+Gerais
+- Autenticação e autorização de usuários
+- Sistema de sessões seguras
+- Upload por colagem de imagens ou pdf da área de transferência
+- Busca e filtragem de pedidos
+- Interface responsiva para desktop e mobile
+- Qualquer usuário altera sua própria senha
+
+Para Vendedores
+- Envio de comprovantes de pagamento
+- Visualização de status dos pedidos enviados
+- Exclusão de pedidos pendentes
+- Filtros por número do pedido e status
+
+Para Administradores
+- Verificação de comprovantes pendentes
+- Aprovação ou rejeição de comprovantes
+- Visualização de todos os pedidos
+- Criação de novos usuários (vendedores)
+- Dashboard com estatísticas
+- Filtros por número do pedido e status
+
+Usuários e Permissões
+Tipos de Usuários
+- Administrador: Pode verificar, aprovar, rejeitar comprovantes e gerenciar usuários
+- Vendedor: Pode enviar comprovantes e visualizar status dos próprios pedidos
+
+Permissões
+- Páginas de dashboard e verificação: Somente administradores
+- Página de upload e status: Somente vendedores e administradores
+- Página de login: Acessível a todos
+- Página de registro: Somente administradores podem registrar novos usuários
+
+Telas do Sistema
+Login
+- Rota: /login
+- Descrição: Tela de autenticação para acesso ao sistema
+- Acesso: Público
+
+Dashboard (Administradores)
+- Rota: /dashboard
+- Descrição: Página com estatísticas e lista de todos os pedidos
+- Filtros: Por número do pedido e status
+- Acesso: Apenas administradores
+
+Envio de Comprovantes
+- Rota: /upload
+- Descrição: Formulário para envio de comprovantes de pagamento
+- Campos: Número do pedido, descrição, arquivos
+- Acesso: Vendedores e administradores
+
+Verificação de Pagamentos (Administradores)
+- Rota: /verificar
+- Descrição: Página para aprovar ou rejeitar comprovantes pendentes
+- Filtros: Por número do pedido e status
+- Acesso: Apenas administradores
+
+Status de Pedidos Enviados (Vendedores)
+- Rota: /verificar-status
+- Descrição: Lista dos comprovantes enviados pelo vendedor
+- Filtros: Por número do pedido e status
+- Acesso: Vendedores e administradores
+
+Status Individual de Pedido
+- Rota: /status/:numero_pedido
+- Descrição: Visualização de status de um pedido específico
+- Acesso: Todos os usuários autenticados
