@@ -82,6 +82,31 @@ header span {
     transform: scale(1.05);
 }
 
+/* Estilo para o botão de exclusão (ícone de lixeira) */
+.delete-icon-btn {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    z-index: 10;
+    border: 1px solid;
+    transition: all 0.2s ease;       
+    margin-top: 0.25rem;
+    margin-right: 0.25rem;
+}
+
+.delete-icon-btn:hover {
+    transform: scale(1.1);
+    background-color: rgba(220, 53, 69, 0.1); /* Cor vermelha mais clara no hover */
+}
+
+.delete-icon-btn i {
+    font-size: 14px;
+}
+
 /* Modal para visualizar imagem */
 .modal-img {
     max-width: 100%;
@@ -90,7 +115,7 @@ header span {
     height: auto;    /* Mantém a proporção */
     display: block;  /* Para centralizar facilmente com margin: auto; se necessário */
     margin: auto;    /* Centraliza a imagem no modal */
-    
+
 }
 
 /* Ajustes para telas pequenas (Mobile) */
