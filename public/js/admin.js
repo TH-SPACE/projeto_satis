@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const loadingIndicator = document.getElementById("loading");
   const emptyMessage = document.getElementById("empty-message");
   const cardTemplate = document.getElementById("payment-card-template");
+  const searchInput = document.getElementById("searchInput");
 
   // Elementos do Modal e Carrossel
   const modalTitle = document.querySelector("#imageModalLabel");
@@ -15,31 +16,35 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   let currentStatus = "pending";
+  let allPayments = []; // Armazena todos os pagamentos para filtragem
 
   async function fetchPayments(status) {
+    if (status === "dashboard") {
+      // A página de dashboard não precisa de filtro, então carrega normalmente
+      await fetchDashboardData();
+      return;
+    }
+
     loadingIndicator.classList.remove("d-none");
     emptyMessage.classList.add("d-none");
     paymentsList.innerHTML = "";
 
-    if (status === "dashboard") {
-      await fetchDashboardData();
-    } else {
-      try {
-        const response = await fetch(`/api/payments/${status}`);
-        if (!response.ok) throw new Error("Falha ao carregar os dados.");
+    try {
+      const response = await fetch(`/api/payments/${status}`);
+      if (!response.ok) throw new Error("Falha ao carregar os dados.");
 
-        const payments = await response.json();
+      allPayments = await response.json();
 
-        if (payments.length === 0) {
-          emptyMessage.classList.remove("d-none");
-        } else {
-          payments.forEach(createPaymentCard);
-        }
-      } catch (error) {
-        paymentsList.innerHTML = `<div class="col"><div class="alert alert-danger">${error.message}</div></div>`;
-      } finally {
-        loadingIndicator.classList.add("d-none");
+      if (allPayments.length === 0) {
+        emptyMessage.classList.remove("d-none");
+      } else {
+        // Aplica o filtro ao carregar os pagamentos
+        applyFilter();
       }
+    } catch (error) {
+      paymentsList.innerHTML = `<div class="col"><div class="alert alert-danger">${error.message}</div></div>`;
+    } finally {
+      loadingIndicator.classList.add("d-none");
     }
   }
 
@@ -68,6 +73,44 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       loadingIndicator.classList.add("d-none");
     }
+  }
+
+  // Função para aplicar o filtro de pesquisa
+  function applyFilter() {
+    if (!searchInput || currentStatus === "dashboard") {
+      // Se não houver campo de busca ou estivermos no dashboard, mostrar todos os pagamentos
+      paymentsList.innerHTML = "";
+      if (allPayments.length === 0) {
+        emptyMessage.classList.remove("d-none");
+      } else {
+        emptyMessage.classList.add("d-none");
+        allPayments.forEach(createPaymentCard);
+      }
+      return;
+    }
+
+    const searchTerm = searchInput.value.toLowerCase();
+    const filteredPayments = allPayments.filter(payment =>
+      payment.orderId.toLowerCase().includes(searchTerm)
+    );
+
+    paymentsList.innerHTML = "";
+
+    if (filteredPayments.length === 0) {
+      emptyMessage.classList.remove("d-none");
+    } else {
+      emptyMessage.classList.add("d-none");
+      filteredPayments.forEach(createPaymentCard);
+    }
+  }
+
+  // Evento para o campo de busca
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      if (currentStatus !== "dashboard") { // Não aplica filtro na página do dashboard
+        applyFilter();
+      }
+    });
   }
 
   function createDashboardCards(dashboardData) {
@@ -310,6 +353,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Garante que a sessão (e window.currentUser) foi carregada antes de buscar os pagamentos
+  if (window.currentUser) {
+    // Certificar-se de que o campo de busca esteja visível inicialmente para a aba pending
+    if (searchInput) {
+      searchInput.style.display = "block";
+    }
+    fetchPayments("pending");
+  } else {
+    // Adiciona um pequeno delay para esperar o navbar.js carregar, se necessário
+    setTimeout(() => {
+      if (window.currentUser) {
+        // Certificar-se de que o campo de busca esteja visível inicialmente para a aba pending
+        if (searchInput) {
+          searchInput.style.display = "block";
+        }
+        fetchPayments("pending");
+      } else {
+        // Se ainda não estiver definido, pode ser um erro ou o usuário não está logado
+        window.location.href = "/login";
+      }
+    }, 200);
+  }
+
   statusTabs.addEventListener("click", (event) => {
     event.preventDefault();
     if (event.target.tagName === "A") {
@@ -319,24 +385,27 @@ document.addEventListener("DOMContentLoaded", () => {
       if (newStatus && newStatus !== currentStatus) {
         statusTabs.querySelector(".active").classList.remove("active");
         navLink.classList.add("active");
+
+        // Esconder o campo de busca quando for dashboard
+        if (newStatus === "dashboard") {
+          if (searchInput) {
+            searchInput.style.display = "none";
+          }
+        } else {
+          // Mostrar o campo de busca para outras abas
+          if (searchInput) {
+            searchInput.style.display = "block";
+          }
+        }
+
         currentStatus = newStatus;
         fetchPayments(currentStatus);
+
+        // Limpar o campo de busca ao mudar de status (exceto para dashboard)
+        if (newStatus !== "dashboard") {
+          searchInput.value = "";
+        }
       }
     }
   });
-
-  // Garante que a sessão (e window.currentUser) foi carregada antes de buscar os pagamentos
-  if (window.currentUser) {
-    fetchPayments("pending");
-  } else {
-    // Adiciona um pequeno delay para esperar o navbar.js carregar, se necessário
-    setTimeout(() => {
-      if (window.currentUser) {
-        fetchPayments("pending");
-      } else {
-        // Se ainda não estiver definido, pode ser um erro ou o usuário não está logado
-        window.location.href = "/login";
-      }
-    }, 200);
-  }
 });

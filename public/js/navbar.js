@@ -141,7 +141,41 @@ function addEventListeners(user) {
     // Evento do formulário de Alteração de Senha
     document.getElementById('changePasswordForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        // ... (código existente)
+        
+        const oldPassword = document.getElementById('oldPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+        const messageDiv = document.getElementById('password-message');
+
+        if (newPassword !== confirmNewPassword) {
+            messageDiv.className = 'text-danger';
+            messageDiv.textContent = 'As senhas novas não coincidem.';
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/auth/change-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ oldPassword, newPassword })
+            });
+            const result = await response.json();
+
+            if (response.ok) {
+                messageDiv.className = 'text-success';
+                messageDiv.textContent = result.message;
+                document.getElementById('changePasswordForm').reset();
+                setTimeout(() => {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
+                    modal.hide();
+                }, 2000);
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            messageDiv.className = 'text-danger';
+            messageDiv.textContent = error.message;
+        }
     });
 
     if (user.perfil === 'admin') {

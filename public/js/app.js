@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loadingIndicator = document.getElementById("loading");
     const emptyMessage = document.getElementById("empty-message");
     const cardTemplate = document.getElementById("payment-card-template");
+    const searchInput = document.getElementById("searchInput");
 
     // Elementos do Modal e Carrossel
     const modalTitle = document.querySelector("#imageModalLabel");
@@ -33,6 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const previewsContainer = document.getElementById('previews');
 
     let currentStatus = "pending";
+    let allPayments = []; // Armazena todos os pagamentos para filtragem
     let stagedFiles = [];
 
     // Função para alternar entre as abas principais
@@ -73,12 +75,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const response = await fetch(`/api/payments/${status}`);
             if (!response.ok) throw new Error("Falha ao carregar os dados.");
 
-            const payments = await response.json();
+            allPayments = await response.json();
 
-            if (payments.length === 0) {
+            if (allPayments.length === 0) {
                 emptyMessage.classList.remove("d-none");
             } else {
-                payments.forEach(createPaymentCard);
+                // Aplica o filtro ao carregar os pagamentos
+                applyFilter();
             }
         } catch (error) {
             paymentsList.innerHTML = `<div class="col"><div class="alert alert-danger">${error.message}</div></div>`;
@@ -86,6 +89,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadingIndicator.classList.add("d-none");
         }
     }
+
+    // Função para aplicar o filtro de pesquisa
+    function applyFilter() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const filteredPayments = allPayments.filter(payment => 
+            payment.orderId.toLowerCase().includes(searchTerm)
+        );
+
+        paymentsList.innerHTML = "";
+
+        if (filteredPayments.length === 0) {
+            emptyMessage.classList.remove("d-none");
+        } else {
+            emptyMessage.classList.add("d-none");
+            filteredPayments.forEach(createPaymentCard);
+        }
+    }
+
+    // Evento para o campo de busca
+    searchInput?.addEventListener("input", () => {
+        applyFilter();
+    });
 
     function createPaymentCard(payment) {
         const cardClone = cardTemplate.content.cloneNode(true);
@@ -398,6 +423,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 renderPreviews();
                 orderIdInput.classList.remove('is-invalid');
                 pasteZone.classList.remove('border-danger');
+                // Recarregar pagamentos após envio
+                if(submissionsSection.classList.contains('d-none')) {
+                    // Se estiver na aba de envio, recarregar ao mudar para a aba de envios
+                } else {
+                    fetchPayments(currentStatus);
+                }
             } else {
                 throw new Error(result.message || 'Ocorreu um erro.');
             }
