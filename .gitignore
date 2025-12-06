@@ -5,16 +5,16 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# Environment
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# # Environment
+# .env
+# .env.local
+# .env.development.local
+# .env.test.local
+# .env.production.local
 
-# Database
-*.db
-*.db-journal
+# # Database
+# *.db
+# *.db-journal
 
 # OS
 .DS_Store
